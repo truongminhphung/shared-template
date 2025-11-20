@@ -19,6 +19,4 @@ def create_user(user: UserCreate, service: UserService = Depends(get_user_servic
 @router.get("/users/{user_id}", response_model=UserRead)
 def get_user(user_id: int, service: UserService = Depends(get_user_service)):
     user = service.get_user(user_id)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
     return user
