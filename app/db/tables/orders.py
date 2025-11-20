@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 class Order(Base):
     __tablename__ = "orders"
-    
+
     id: Mapped[int] = mapped_column(primary_key=True)
     item_name: Mapped[str] = mapped_column()
     quantity: Mapped[int] = mapped_column()
