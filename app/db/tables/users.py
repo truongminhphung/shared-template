@@ -11,7 +11,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String, unique=True, index=True)
-    full_name: Mapped[str] = mapped_column(String)
+    user_name: Mapped[str] = mapped_column(String)
     is_active: Mapped[bool] = mapped_column(default=True)
     orders: Mapped[list["Order"]] = relationship(back_populates="user")
     
