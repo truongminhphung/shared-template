@@ -1,7 +1,8 @@
 FROM python:3.13-slim-bookworm
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
-        build-essential && \
+        build-essential \
+        curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ADD https://astral.sh/uv/install.sh /install.sh
@@ -21,4 +22,4 @@ ENV PATH="/app/.venv/bin:{$PATH}"
 # Expose the specified port for FastAPI
 EXPOSE $PORT
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
