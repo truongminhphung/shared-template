@@ -9,7 +9,7 @@ class Config(BaseSettings):
     debug: bool = False
     
     # Database Configuration
-    db_user: str 
+    db_user: str
     db_password: str
     db_name: str
     # Default to localhost/5432 for local testing, 

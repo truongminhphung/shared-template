@@ -1,5 +1,5 @@
 # The Global Exception Handler
-from fastapi import Request, HTTPException, FastAPI
+from fastapi import Request, FastAPI
 from fastapi.responses import JSONResponse
 from app.core.exceptions import ResourceNotFound, DuplicateResource
 

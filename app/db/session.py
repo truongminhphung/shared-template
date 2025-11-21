@@ -9,7 +9,6 @@ DATABASE_URL = config.db_url.replace("postgresql://", "postgresql+asyncpg://")
 engine = create_async_engine(
     DATABASE_URL,
     echo=config.debug,  # Log SQL queries in debug mode
-    future=True,
     pool_pre_ping=True,  # Verify connections before using them
     pool_size=10,  # Maximum number of connections to keep in the pool
     max_overflow=20,  # Maximum number of connections that can be created beyond pool_size
@@ -26,7 +25,7 @@ AsyncSessionLocal = async_sessionmaker(
 
 
 # Dependency to get DB session
-async def get_db() -> AsyncGenerator[AsyncSession , None]:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     Provides a database session.
     Commit and rollback should be handled explicitly in service layer.
