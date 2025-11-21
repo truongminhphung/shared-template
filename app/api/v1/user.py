@@ -7,16 +7,16 @@ from app.models.users import UserRead, UserCreate
 router = APIRouter()
 
 @router.get("/users", response_model=list[UserRead])
-def list_users(service: UserService = Depends(get_user_service)):
-    users = service.list_users()
+async def list_users(service: UserService = Depends(get_user_service)):
+    users = await service.list_users()
     return users
 
 @router.post("/users", response_model=UserRead)
-def create_user(user: UserCreate, service: UserService = Depends(get_user_service)):
-    new_user = service.create_user(email=user.email, user_name=user.username)
+async def create_user(user: UserCreate, service: UserService = Depends(get_user_service)):
+    new_user = await service.create_user(email=user.email, user_name=user.username)
     return new_user
 
 @router.get("/users/{user_id}", response_model=UserRead)
-def get_user(user_id: int, service: UserService = Depends(get_user_service)):
-    user = service.get_user(user_id)
+async def get_user(user_id: int, service: UserService = Depends(get_user_service)):
+    user = await service.get_user(user_id)
     return user
