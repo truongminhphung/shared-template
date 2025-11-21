@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from app.api.v1 import user, health
 from app.core.config import config
-from app.core.logging import setup_logging
+from app.core.log_config import setup_logging
 from app.core.handlers import register_exception_handlers
 from app.db.base import Base
 
