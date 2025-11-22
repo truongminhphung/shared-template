@@ -19,14 +19,10 @@ class UserService:
     
     async def list_users(self) -> list[User]:
         """Retrieve all users from the database."""
-        try:
-            result = await self.session.execute(select(User))
-            users= result.scalars().all()
-            self.logger.info(f"Retrieved {len(users)} users")
-            return users
-        except Exception as e:
-            self.logger.error(f"Error listing users: {e}")
-            raise
+        result = await self.session.execute(select(User))
+        users = result.scalars().all()
+        self.logger.info(f"Retrieved {len(users)} users")
+        return users
             
     async def get_user(self, user_id: int) -> User:
         """
@@ -48,7 +44,6 @@ class UserService:
     async def create_user(self, email: str, user_name: str) -> User:
         """
         Create a new user.
-        
         Raises:
             ValidationError: If email or user_name is invalid.
             DuplicateResource: If email already exists.

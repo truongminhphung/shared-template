@@ -1,4 +1,5 @@
-FROM python:3.13-slim-bookworm
+# Build stage
+FROM python:3.13-slim-bookworm AS builder
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
         build-essential \
@@ -8,29 +9,39 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 ADD https://astral.sh/uv/install.sh /install.sh
 RUN chmod -R 755 /install.sh && /install.sh && rm /install.sh
 
-# Set up the UV environment path correctly
 ENV PATH="/root/.local/bin:${PATH}"
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
 # Copy only dependency files first (for Docker layer caching)
-# This layer only rebuilds when dependencies change, not on code changes
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml uv.lock* ./
 
 # Install dependencies in a virtual environment
 RUN uv sync --frozen --no-install-project
 
-# Copy the rest of the application code
-COPY . .
+# Runtime stage
+FROM python:3.13-slim-bookworm
 
-# Install the project itself (fast since dependencies are already installed)
-RUN uv sync --frozen
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/app/.venv/bin:${PATH}"
 
-ENV PATH="/app/.venv/bin:{$PATH}"
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser
 
-# Expose the specified port for FastAPI
-EXPOSE $PORT
+WORKDIR /app
 
-# Use --reload for development; remove for production
+# Copy virtual environment from builder
+COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
+
+# Copy application code
+COPY --chown=appuser:appuser . .
+
+# Switch to non-root user
+USER appuser
+
+# Expose the port
+EXPOSE 8000
+
+# Run FastAPI application (no --reload for production)
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
