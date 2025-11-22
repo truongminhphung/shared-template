@@ -52,6 +52,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=config.app_name, lifespan=lifespan)
 
+# Register middleware (order matters: first added = outermost = executes first)
+app.add_middleware(RequestIDMiddleware)
+
 # CORS (Frontend Access)
 # app.add_middleware(
 #     CORSMiddleware,
@@ -60,9 +63,6 @@ app = FastAPI(title=config.app_name, lifespan=lifespan)
 #     allow_methods=["*"],
 #     allow_headers=["*"],
 # )
-
-# # Register middleware (order matters: first added = outermost = executes first)
-# app.add_middleware(RequestIDMiddleware)
 
 # Register exception handlers
 register_exception_handlers(app)
