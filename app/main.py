@@ -1,11 +1,14 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+import logging
 
 from app.api.v1 import user, health
 from app.core.config import config
 from app.core.log_config import setup_logging
 from app.core.handlers import register_exception_handlers
 from app.db.migration import run_migrations
+
+logger = logging.getLogger(__name__)
 
 PREFIX = "/api/v1"
 
@@ -36,8 +39,11 @@ async def lifespan(app: FastAPI):
     The 'yield' separates startup logic (before) from shutdown logic (after).
     """
     # Startup: Run migrations before accepting any requests
-    run_migrations()
-    print("Database migrations completed successfully.")
+    try:
+        run_migrations()
+    except Exception as e:
+        logger.error(f"Error during migrations: {e}")
+        raise
 
     yield  # Application runs here and accepts requests
 
