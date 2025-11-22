@@ -14,9 +14,18 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+# Copy only dependency files first (for Docker layer caching)
+# This layer only rebuilds when dependencies change, not on code changes
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies in a virtual environment
+RUN uv sync --frozen --no-install-project
+
+# Copy the rest of the application code
 COPY . .
 
-RUN uv sync
+# Install the project itself (fast since dependencies are already installed)
+RUN uv sync --frozen
 
 ENV PATH="/app/.venv/bin:{$PATH}"
 

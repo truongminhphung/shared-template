@@ -16,3 +16,10 @@ class DuplicateResource(Exception):
         self.field_value = field_value
         self.message = f"{entity_name} with {field_name} '{field_value}' already exists"
         super().__init__(self.message)
+
+class ValidationError(Exception):
+    """Exception raised when validation fails."""
+    def __init__(self, field: str, message: str) -> None:
+        self.field = field
+        self.message = message
+        super().__init__(self.message)
