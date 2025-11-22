@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends 
+from fastapi import APIRouter, Depends
 
 from app.api.deps import get_user_service
 from app.services.user_service import UserService
@@ -13,7 +13,7 @@ async def list_users(service: UserService = Depends(get_user_service)):
 
 @router.post("/users", response_model=UserRead)
 async def create_user(user: UserCreate, service: UserService = Depends(get_user_service)):
-    new_user = await service.create_user(email=user.email, user_name=user.username)
+    new_user = await service.create_user(email=user.email, user_name=user.user_name)
     return new_user
 
 @router.get("/users/{user_id}", response_model=UserRead)

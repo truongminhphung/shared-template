@@ -1,7 +1,10 @@
 # The Global Exception Handler
 from fastapi import Request, FastAPI
 from fastapi.responses import JSONResponse
-from app.core.exceptions import ResourceNotFound, DuplicateResource
+from app.core.exceptions import ResourceNotFound, DuplicateResource, ValidationError
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def resource_not_found_handler(request: Request, exc: ResourceNotFound):
@@ -18,6 +21,7 @@ async def resource_not_found_handler(request: Request, exc: ResourceNotFound):
 
 async def duplicate_resource_handler(request: Request, exc: DuplicateResource):
     # standardize to HTTP 409 Conflict response
+    logger.error(f"Duplicate resource error: {exc.message}")
     return JSONResponse(
         status_code=409,
         content={
@@ -28,10 +32,24 @@ async def duplicate_resource_handler(request: Request, exc: DuplicateResource):
     )
 
 
+async def validation_error_handler(request: Request, exc: ValidationError):
+    # standardize to HTTP 400 Bad Request response
+    logger.warning(f"Validation error on field '{exc.field}': {exc.message}")
+    return JSONResponse(
+        status_code=400,
+        content={
+            "error": "Validation Error",
+            "field": exc.field,
+            "message": exc.message
+        }
+    )
+
+
 # Registry of exception handlers
 EXCEPTION_HANDLERS = {
     ResourceNotFound: resource_not_found_handler,
     DuplicateResource: duplicate_resource_handler,
+    ValidationError: validation_error_handler,
 }
 
 

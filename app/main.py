@@ -1,11 +1,13 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
 import logging
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import user, health
 from app.core.config import config
 from app.core.log_config import setup_logging
 from app.core.handlers import register_exception_handlers
+from app.core.middleware import RequestIDMiddleware
 from app.db.migration import run_migrations
 
 logger = logging.getLogger(__name__)
@@ -49,6 +51,18 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=config.app_name, lifespan=lifespan)
+
+# Register middleware (order matters: first added = outermost = executes first)
+app.add_middleware(RequestIDMiddleware)
+
+# CORS (Frontend Access)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust this to your frontend's origin in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Register exception handlers
 register_exception_handlers(app)
