@@ -7,6 +7,7 @@ from app.core.exceptions import ResourceNotFound, DuplicateResource
 
 logger = logging.getLogger(__name__)
 
+
 class UserService:
     """
     Business logic service for user operations.
@@ -29,10 +30,11 @@ class UserService:
         Raises:
             ResourceNotFound: If user does not exist.
         """
+        logger.info(f"Fetching user with ID: {user_id}")
         result = await self.session.execute(select(User).where(User.id == user_id))
         user = result.scalars().first()
         if not user:
-            logger.warning(f"User not found with ID: {user_id}")
+            logger.error(f"User not found with ID: {user_id}")
             raise ResourceNotFound("User", user_id)
         logger.info(f"Retrieved user with ID: {user_id}")
         return user

@@ -10,6 +10,7 @@ RUN chmod -R 755 /install.sh && /install.sh && rm /install.sh
 
 # Set up the UV environment path correctly
 ENV PATH="/root/.local/bin:${PATH}"
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
