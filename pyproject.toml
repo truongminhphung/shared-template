@@ -9,6 +9,11 @@ dependencies = [
     "httpx>=0.28.1",
     "pydantic-settings>=2.10.1",
     "pytest>=8.4.1",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "faker>=33.0.0",
+    "testcontainers[postgres]>=4.8.2",
     "python-dotenv>=1.1.1",
     "asyncpg>=0.30.0",
     "sqlalchemy>=2.0.42",
@@ -19,3 +24,44 @@ dependencies = [
 
 [tool.pytest.ini_options]
 pythonpath = "."
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--cov=app",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-fail-under=80",
+    "--strict-markers",
+]
+markers = [
+    "unit: Unit tests that use mocked dependencies",
+    "integration: Integration tests that use real services",
+    "slow: Slow running tests",
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "*/tests/*",
+    "app/db/*",
+    "app/api/v1/health.py",
+
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

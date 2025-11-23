@@ -1,0 +1,105 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        enable-cache: true
+
+    - name: Install dependencies
+      run: |
+        uv sync --frozen
+
+    - name: Run linting (optional)
+      run: |
+        # Add linting commands here if needed
+        # uv run ruff check .
+        echo "Linting skipped (not configured)"
+      continue-on-error: true
+
+    - name: Run tests with coverage
+      env:
+        DB_USER: testuser
+        DB_PASSWORD: testpassword
+        DB_NAME: testdb
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DEBUG: false
+      run: |
+        uv run pytest
+
+    - name: Check coverage threshold
+      run: |
+        uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=80
+
+    - name: Generate coverage report
+      if: always()
+      run: |
+        uv run pytest --cov=app --cov-report=xml --cov-report=html
+
+    - name: Upload coverage reports to Codecov (optional)
+      if: always()
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+      continue-on-error: true
+
+    - name: Archive coverage HTML report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: htmlcov/
+        retention-days: 30
+
+    - name: Comment coverage on PR
+      if: github.event_name == 'pull_request'
+      uses: py-cov-action/python-coverage-comment-action@v3
+      with:
+        GITHUB_TOKEN: ${{ github.token }}
+      continue-on-error: true
+
+    - name: Test Summary
+      if: always()
+      run: |
+        echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Tests completed. Check the logs for details." >> $GITHUB_STEP_SUMMARY
