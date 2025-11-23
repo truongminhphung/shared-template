@@ -63,16 +63,7 @@ jobs:
         DB_PORT: 5432
         DEBUG: false
       run: |
-        uv run pytest
-
-    - name: Check coverage threshold
-      run: |
-        uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=80
-
-    - name: Generate coverage report
-      if: always()
-      run: |
-        uv run pytest --cov=app --cov-report=xml --cov-report=html
+        uv run pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-report=html --cov-fail-under=80
 
     - name: Upload coverage reports to Codecov (optional)
       if: always()
