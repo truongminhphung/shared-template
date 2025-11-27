@@ -71,8 +71,8 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         await session.rollback()
         
         # Clean up all tables after each test
-        await session.execute(text("TRUNCATE TABLE orders CASCADE"))
-        await session.execute(text("TRUNCATE TABLE users CASCADE"))
+        for table in reversed(Base.metadata.sorted_tables):
+            await session.execute(text(f"TRUNCATE TABLE {table.name} CASCADE"))
         await session.commit()
 
 

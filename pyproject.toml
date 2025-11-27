@@ -12,7 +12,6 @@ dependencies = [
     "pytest-asyncio>=0.24.0",
     "pytest-cov>=6.0.0",
     "pytest-mock>=3.14.0",
-    "faker>=33.0.0",
     "testcontainers[postgres]>=4.8.2",
     "python-dotenv>=1.1.1",
     "asyncpg>=0.30.0",
@@ -51,7 +50,6 @@ omit = [
     "*/tests/*",
     "app/db/*",
     "app/api/v1/health.py",
-
 ]
 
 [tool.coverage.report]
