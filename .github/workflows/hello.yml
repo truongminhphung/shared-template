@@ -14,3 +14,12 @@ jobs:
         
             - name: Print date and time
               run: date
+    job-two:
+        name: Second Job
+        runs-on: ubuntu-latest
+        needs: say-hello
+        steps:
+            - name: Print a message from the second job
+              run: echo "This is the second job running after the first job."
+    
+    
