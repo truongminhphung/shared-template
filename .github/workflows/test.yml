@@ -88,7 +88,7 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: tests
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/experiment/')
     
     steps:
       - name: Checkout code
