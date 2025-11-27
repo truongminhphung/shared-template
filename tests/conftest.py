@@ -30,7 +30,7 @@ def test_engine_url(postgres_container: PostgresContainer) -> str:
     return async_url
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def test_engine(test_engine_url: str):
     """Create a test database engine using the PostgreSQL container."""
     engine = create_async_engine(
