@@ -96,7 +96,7 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         # Close the session
         await session.close()
         # Rollback the transaction (undoes all changes)
-        # await transaction.rollback()
+        await transaction.rollback()
         # Close the connection
         await connection.close()
 
