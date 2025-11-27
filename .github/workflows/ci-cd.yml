@@ -83,7 +83,7 @@ jobs:
               DB_HOST: localhost
               DB_PORT: 5432
             run: uv run pytest --cov=app tests/ --cov-report=html --cov-fail-under=80
-            
+
           # upload coverage report
           - name: Upload coverage report
             uses: actions/upload-artifact@v4
@@ -113,7 +113,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: practices/my-app:latest
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
 
       
           
