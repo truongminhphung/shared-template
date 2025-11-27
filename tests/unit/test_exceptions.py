@@ -1,8 +1,7 @@
 """Unit tests for custom exception handlers."""
 
 import pytest
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from httpx import AsyncClient, ASGITransport
 
 from app.core.exceptions import (

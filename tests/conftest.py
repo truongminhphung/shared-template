@@ -1,7 +1,5 @@
 """Test configuration and fixtures."""
 
-import asyncio
-import os
 from typing import AsyncGenerator
 
 import pytest
