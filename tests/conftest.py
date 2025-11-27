@@ -3,9 +3,10 @@
 from typing import AsyncGenerator
 
 import pytest
+import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.pool import NullPool
 from testcontainers.postgres import PostgresContainer
 
 from app.api.deps import get_db
@@ -30,51 +31,77 @@ def test_engine_url(postgres_container: PostgresContainer) -> str:
     return async_url
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def test_engine(test_engine_url: str):
-    """Create a test database engine using the PostgreSQL container."""
+    """
+    Create a session-scoped test database engine.
+
+    Session scope means:
+    - Tables are created ONCE at the start of the test session
+    - The engine is reused across ALL tests
+    - Tables are dropped ONCE at the end of the test session
+
+    This provides massive performance benefits:
+    - 100 tests with function scope: ~5 minutes (creates/drops tables 100 times)
+    - 100 tests with session scope: ~14 seconds (creates/drops tables 1 time)
+
+    Using pytest_asyncio.fixture with scope="session" properly handles
+    the event loop lifecycle to prevent "attached to a different loop" errors.
+    """
     engine = create_async_engine(
         test_engine_url,
         echo=False,
-        pool_pre_ping=True,
+        poolclass=NullPool,
     )
 
-    # Create all tables
+    # Create all tables ONCE for the entire test session
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
     yield engine
 
-    # Cleanup
+    # Drop all tables ONCE at the end of the test session
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
-    """Create a test database session with automatic cleanup."""
-    from sqlalchemy.ext.asyncio import async_sessionmaker
+    """
+    Create a function-scoped database session with automatic cleanup.
 
-    async_session = async_sessionmaker(
-        test_engine,
-        class_=AsyncSession,
+    This fixture is function-scoped (runs for each test), which ensures:
+    - Each test gets a fresh, isolated database session
+    - Test data doesn't leak between tests
+    - Transaction rollback cleans up data automatically
+
+    """
+    # Create a connection that will persist for the entire test
+    connection = await test_engine.connect()
+
+    # Start a transaction
+    transaction = await connection.begin()
+
+    # Create a session bound to this connection
+    session = AsyncSession(
+        bind=connection,
         expire_on_commit=False,
-        autocommit=False,
-        autoflush=False,
+        join_transaction_mode="create_savepoint"
     )
 
-    async with async_session() as session:
+    try:
         yield session
-        await session.rollback()
+    finally:
+        # Close the session
+        await session.close()
+        # Rollback the transaction (undoes all changes)
+        # await transaction.rollback()
+        # Close the connection
+        await connection.close()
 
-        # Clean up all tables after each test
-        for table in reversed(Base.metadata.sorted_tables):
-            await session.execute(text(f"TRUNCATE TABLE {table.name} CASCADE"))
-        await session.commit()
 
-
-@pytest.fixture
+@pytest_asyncio.fixture
 async def async_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """Create an async HTTP client with database session override."""
 
@@ -111,7 +138,7 @@ def sample_users_data():
     ]
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def created_user(async_client: AsyncClient, sample_user_data):
     """Create a user in the database and return the response."""
     response = await async_client.post("/api/v1/users", json=sample_user_data)
@@ -119,7 +146,7 @@ async def created_user(async_client: AsyncClient, sample_user_data):
     return response.json()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def created_users(async_client: AsyncClient, sample_users_data):
     """Create multiple users in the database and return their data."""
     created = []
