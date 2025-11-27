@@ -7,49 +7,74 @@ on:
         branches: [main, develop]
     
 jobs:
-    tests:
-        runs-on: ubuntu-latest
+  # check linting
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        # start a PostgreSQL service
-        services:
-            postgres:
-                image: postgres:15
-                env:
-                    POSTGRES_USER: testuser
-                    POSTGRES_PASSWORD: testpassword
-                    POSTGRES_DB: testdb
-                options: >-
-                    --health-cmd pg_isready
-                    --health-interval 10s
-                    --health-timeout 5s
-                    --health-retries 5
-                ports:
-                    - 5432:5432
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+            python-version: 3.13
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Set up Python 3.13
-              uses: actions/setup-python@v5
-              with:
-                  python-version: 3.13
-
-            - name: Install uv
-              uses: astral-sh/setup-uv@v4
-              with:
-                  enable-cache: true
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+            enable-cache: true
+      
+      - name: Install dependencies
+        run: |
+          uv sync --frozen
+          uv pip install ruff
             
-            - name: Install dependencies
-              run: uv sync --frozen
+      - name: Run Ruff linter
+        run: uv run ruff check . --output-format=github
+        
+  tests:
+      runs-on: ubuntu-latest
 
-            # run tests
-            - name: Run tests with coverage
+      # start a PostgreSQL service
+      services:
+          postgres:
+              image: postgres:15
               env:
-                DB_USER: testuser
-                DB_PASSWORD: testpassword
-                DB_NAME: testdb
-                DB_HOST: localhost
-                DB_PORT: 5432
-              run: uv run pytest --cov=app tests/ --cov-report=xml --cov-fail-under=80
-            
+                  POSTGRES_USER: testuser
+                  POSTGRES_PASSWORD: testpassword
+                  POSTGRES_DB: testdb
+              options: >-
+                  --health-cmd pg_isready
+                  --health-interval 10s
+                  --health-timeout 5s
+                  --health-retries 5
+              ports:
+                  - 5432:5432
+
+      steps:
+          - name: Checkout code
+            uses: actions/checkout@v4
+
+          - name: Set up Python 3.13
+            uses: actions/setup-python@v5
+            with:
+                python-version: 3.13
+
+          - name: Install uv
+            uses: astral-sh/setup-uv@v4
+            with:
+                enable-cache: true
+          
+          - name: Install dependencies
+            run: uv sync --frozen
+
+          # run tests
+          - name: Run tests with coverage
+            env:
+              DB_USER: testuser
+              DB_PASSWORD: testpassword
+              DB_NAME: testdb
+              DB_HOST: localhost
+              DB_PORT: 5432
+            run: uv run pytest --cov=app tests/ --cov-report=xml --cov-fail-under=80
+          
