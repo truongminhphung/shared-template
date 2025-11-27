@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: tests
     # add startsWith(github.ref, 'refs/heads/experiment/') for development branches
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/experiment/')
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     
     steps:
       - name: Checkout code
@@ -106,7 +106,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
+          tags: practices/my-app:latest
 
       
           
