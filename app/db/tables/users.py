@@ -6,6 +6,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from .orders import Order
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -14,4 +15,3 @@ class User(Base):
     user_name: Mapped[str] = mapped_column(String)
     is_active: Mapped[bool] = mapped_column(default=True)
     orders: Mapped[list["Order"]] = relationship(back_populates="user")
-    

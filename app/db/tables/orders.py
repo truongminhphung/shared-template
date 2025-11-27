@@ -6,6 +6,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from .users import User
 
+
 class Order(Base):
     __tablename__ = "orders"
 

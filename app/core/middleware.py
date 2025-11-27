@@ -1,7 +1,6 @@
 import uuid
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.datastructures import MutableHeaders
 import contextvars
 
 # Context variable to store request_id across the request lifecycle
