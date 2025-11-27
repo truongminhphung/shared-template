@@ -13,9 +13,9 @@ async def resource_not_found_handler(request: Request, exc: ResourceNotFound):
         status_code=404,
         content={
             "error": "Resource Not Found",
-            "entity": exc.entity_name, # help frontend know WHAT was missing
-            "message": exc.message
-        }
+            "entity": exc.entity_name,  # help frontend know WHAT was missing
+            "message": exc.message,
+        },
     )
 
 
@@ -26,9 +26,9 @@ async def duplicate_resource_handler(request: Request, exc: DuplicateResource):
         status_code=409,
         content={
             "error": "Duplicate Resource",
-            "entity": exc.entity_name, # help frontend know WHAT was duplicate
-            "message": exc.message
-        }
+            "entity": exc.entity_name,  # help frontend know WHAT was duplicate
+            "message": exc.message,
+        },
     )
 
 
@@ -40,8 +40,8 @@ async def validation_error_handler(request: Request, exc: ValidationError):
         content={
             "error": "Validation Error",
             "field": exc.field,
-            "message": exc.message
-        }
+            "message": exc.message,
+        },
     )
 
 

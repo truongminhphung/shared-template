@@ -38,13 +38,13 @@ async def test_engine(test_engine_url: str):
         echo=False,
         pool_pre_ping=True,
     )
-    
+
     # Create all tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     yield engine
-    
+
     # Cleanup
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
@@ -55,7 +55,7 @@ async def test_engine(test_engine_url: str):
 async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     """Create a test database session with automatic cleanup."""
     from sqlalchemy.ext.asyncio import async_sessionmaker
-    
+
     async_session = async_sessionmaker(
         test_engine,
         class_=AsyncSession,
@@ -63,11 +63,11 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         autocommit=False,
         autoflush=False,
     )
-    
+
     async with async_session() as session:
         yield session
         await session.rollback()
-        
+
         # Clean up all tables after each test
         for table in reversed(Base.metadata.sorted_tables):
             await session.execute(text(f"TRUNCATE TABLE {table.name} CASCADE"))
@@ -77,18 +77,17 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture
 async def async_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """Create an async HTTP client with database session override."""
-    
+
     async def override_get_db():
         yield db_session
-    
+
     app.dependency_overrides[get_db] = override_get_db
-    
+
     async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test"
+        transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
         yield client
-    
+
     app.dependency_overrides.clear()
 
 
@@ -98,7 +97,7 @@ def sample_user_data():
     return {
         "user_name": "testuser",
         "email": "test@example.com",
-        "password": "securepassword123"
+        "password": "securepassword123",
     }
 
 
@@ -106,21 +105,9 @@ def sample_user_data():
 def sample_users_data():
     """Return multiple sample users for testing."""
     return [
-        {
-            "user_name": "user1",
-            "email": "user1@example.com",
-            "password": "password1"
-        },
-        {
-            "user_name": "user2",
-            "email": "user2@example.com",
-            "password": "password2"
-        },
-        {
-            "user_name": "user3",
-            "email": "user3@example.com",
-            "password": "password3"
-        }
+        {"user_name": "user1", "email": "user1@example.com", "password": "password1"},
+        {"user_name": "user2", "email": "user2@example.com", "password": "password2"},
+        {"user_name": "user3", "email": "user3@example.com", "password": "password3"},
     ]
 
 

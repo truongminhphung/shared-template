@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 async def health_check(db: AsyncSession = Depends(get_db)):
     """
     Health check endpoint for load balancers and orchestration platforms.
-    
+
     Returns:
         - 200 OK: Service is healthy and database is connected
         - 500 Internal Server Error: Database connection failed
-    
+
     Used by:
         - AWS ALB (Application Load Balancer)
         - Kubernetes liveness/readiness probes
@@ -30,17 +30,14 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         return {"status": "ok"}
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail="Database connection failed"
-        )
+        raise HTTPException(status_code=500, detail="Database connection failed")
 
 
 @router.get("/status", tags=["health"])
 async def status_check(db: AsyncSession = Depends(get_db)):
     """
     Alias endpoint for /health. Some systems prefer /status instead of /health.
-    
+
     Returns:
         - 200 OK: Service is healthy and database is connected
         - 500 Internal Server Error: Database connection failed
@@ -51,7 +48,4 @@ async def status_check(db: AsyncSession = Depends(get_db)):
         return {"status": "ok"}
     except Exception as e:
         logger.error(f"Status check failed: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail="Database connection failed"
-        )
+        raise HTTPException(status_code=500, detail="Database connection failed")

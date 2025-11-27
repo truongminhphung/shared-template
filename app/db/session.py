@@ -29,7 +29,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     Provides a database session.
     Commit and rollback should be handled explicitly in service layer.
-    
+
     Example:
         @app.post("/items/")
         async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
@@ -43,4 +43,3 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     async with AsyncSessionLocal() as session:
         yield session
-        

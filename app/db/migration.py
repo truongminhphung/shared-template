@@ -1,4 +1,5 @@
 """Database migration utilities for running Alembic migrations programmatically."""
+
 import logging
 from alembic import command
 from alembic.config import Config
