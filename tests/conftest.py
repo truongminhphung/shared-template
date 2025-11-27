@@ -5,7 +5,7 @@ from typing import AsyncGenerator
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 from testcontainers.postgres import PostgresContainer
 
@@ -84,13 +84,14 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     transaction = await connection.begin()
 
     # Create a session bound to this connection
-    session = AsyncSession(
+    session_factory = async_sessionmaker(
         bind=connection,
         expire_on_commit=False,
         join_transaction_mode="create_savepoint"
     )
 
     try:
+        session = session_factory()
         yield session
     finally:
         # Close the session
